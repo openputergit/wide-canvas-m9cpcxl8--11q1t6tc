@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>iOS Calculator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'SF Pro Display', sans-serif;
+            background: #000;
+            touch-action: manipulation;
+        }
+        .calculator-btn {
+            border-radius: 50%;
+            font-size: 2rem;
+            transition: all 0.1s;
+        }
+        .calculator-btn:active {
+            filter: brightness(130%);
+            transform: scale(0.95);
+        }
+        .display {
+            font-size: 4.5rem;
+            height: 120px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        @media (max-width: 380px) {
+            .calculator-btn {
+                width: 65px !important;
+                height: 65px !important;
+            }
+            .display {
+                font-size: 3.5rem;
+                height: 90px;
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+    <div class="max-w-[380px] w-full bg-black text-white p-4 rounded-3xl">
+        <div class="display flex justify-end items-end pb-4 px-4">
+            <div id="display">0</div>
+        </div>
+        <div class="grid grid-cols-4 gap-3">
+            <button class="calculator-btn w-[80px] h-[80px] bg-[#A5A5A5] text-black" onclick="clearDisplay()">AC</button>
+            <button class="calculator-btn w-[80px] h-[80px] bg-[#A5A5A5] text-black" onclick="toggleSign()">±</button>
+            <button class="calculator-btn w-[80px] h-[80px] bg-[#A5A5A5] text-black" onclick="percentage()">%</button>
+            <button class="calculator-btn w-[80px] h-[80px] bg-[#FF9F0A]" onclick="setOperation('÷')">÷</button>
+            
+            <button class="calculator-btn w-[80px] h-[80px] bg-[#333333]" onclick="appendNumber('7')">7</button>
+            <button class="calculator-btn w-[80px] h-[80px] bg-[#333333]" onclick="appendNumber('8')">8</button>
+            <button class="calculator-btn w-[80px] h-[80px] bg-[#333333]" onclick="appendNumber('9')">9</button>
+            <button class="calculator-btn w-[80px] h-[80px] bg-[#FF9F0A]" onclick="setOperation('×')">×</button>
+            
+            <button class="calculator-btn w-[80px] h-[80px] bg-[#333333]" onclick="appendNumber('4')">4</button>
+            <button class="calculator-btn w-[80px] h-[80px] bg-[#333333]" onclick="appendNumber('5')">5</button>
+            <button class="calculator-btn w-[80px] h-[80px] bg-[#333333]" onclick="appendNumber('6')">6</button>
+            <button class="calculator-btn w-[80px] h-[80px] bg-[#FF9F0A]" onclick="setOperation('-')">-</button>
+            
+            <button class="calculator-btn w-[80px] h-[80px] bg-[#333333]" onclick="appendNumber('1')">1</button>
+            <button class="calculator-btn w-[80px] h-[80px] bg-[#333333]" onclick="appendNumber('2')">2</button>
+            <button class="calculator-btn w-[80px] h-[80px] bg-[#333333]" onclick="appendNumber('3')">3</button>
+            <button class="calculator-btn w-[80px] h-[80px] bg-[#FF9F0A]" onclick="setOperation('+')">+</button>
+            
+            <button class="calculator-btn w-[80px] h-[80px] bg-[#333333] col-span-2 !rounded-full w-full" style="width: auto;" onclick="appendNumber('0')">0</button>
+            <button class="calculator-btn w-[80px] h-[80px] bg-[#333333]" onclick="appendDecimal()">.</button>
+            <button class="calculator-btn w-[80px] h-[80px] bg-[#FF9F0A]" onclick="calculate()">=</button>
+        </div>
+    </div>
+
+    <script>
+        let currentInput = '0';
+        let previousInput = '';
+        let operation = null;
+        let shouldResetScreen = false;
+
+        const display = document.getElementById('display');
+
+        function updateDisplay() {
+            display.textContent = currentInput;
+        }
+
+        function appendNumber(number) {
+            if (currentInput === '0' || shouldResetScreen) {
+                currentInput = number;
+                shouldResetScreen = false;
+            } else {
+                currentInput += number;
+            }
+            updateDisplay();
+        }
+
+        function clearDisplay() {
+            currentInput = '0';
+            previousInput = '';
+            operation = null;
+            updateDisplay();
+        }
+
+        function toggleSign() {
+            currentInput = (parseFloat(currentInput) * -1).toString();
+            updateDisplay();
+        }
+
+        function percentage() {
+            currentInput = (parseFloat(currentInput) / 100).toString();
+            updateDisplay();
+        }
+
+        function appendDecimal() {
+            if (!currentInput.includes('.')) {
+                currentInput += '.';
+                updateDisplay();
+            }
+        }
+
+        function setOperation(op) {
+            if (operation !== null) calculate();
+            previousInput = currentInput;
+            operation = op;
+            shouldResetScreen = true;
+        }
+
+        function calculate() {
+            if (operation === null || shouldResetScreen) return;
+            
+            let result;
+            const prev = parseFloat(previousInput);
+            const current = parseFloat(currentInput);
+
+            switch (operation) {
+                case '+':
+                    result = prev + current;
+                    break;
+                case '-':
+                    result = prev - current;
+                    break;
+                case '×':
+                    result = prev * current;
+                    break;
+                case '÷':
+                    result = prev / current;
+                    break;
+                default:
+                    return;
+            }
+
+            currentInput = result.toString();
+            operation = null;
+            updateDisplay();
+        }
+
+        // Handle keyboard input
+        document.addEventListener('keydown', (event) => {
+            if (event.key >= '0' && event.key <= '9') appendNumber(event.key);
+            if (event.key === '.') appendDecimal();
+            if (event.key === '=' || event.key === 'Enter') calculate();
+            if (event.key === 'Escape') clearDisplay();
+            if (event.key === '+') setOperation('+');
+            if (event.key === '-') setOperation('-');
+            if (event.key === '*') setOperation('×');
+            if (event.key === '/') {
+                event.preventDefault();
+                setOperation('÷');
+            }
+        });
+    </script>
+<script>document.body.addEventListener('wheel', e => { if (!e.ctrlKey) return; e.preventDefault(); return }, { passive: false })</script>
+	</body>
+</html>
